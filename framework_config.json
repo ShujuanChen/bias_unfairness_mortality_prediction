@@ -1,0 +1,249 @@
+{
+  "phase1": {
+    "baseline_date": "2011-03-27",
+    "follow_up_end": "2023-02-15",
+    "age_min": 40,
+    "age_max": 69,
+    "horizons_years": [
+      5,
+      10
+    ],
+    "predictors": {
+      "outcome": {
+        "numeric": [
+          "age"
+        ],
+        "categorical": [
+          "sex",
+          "ethnicity",
+          "tenure",
+          "household_size",
+          "econstatus",
+          "education",
+          "ruralurban",
+          "health",
+          "imd_decile"
+        ]
+      },
+      "hse_participation": [
+        "sex",
+        "age",
+        "education_age",
+        "alcfrequency",
+        "smoking_status",
+        "income",
+        "household_size",
+        "econstatus",
+        "bmi",
+        "bmi_cat",
+        "health",
+        "height",
+        "ruralurban",
+        "weight",
+        "disability",
+        "ethnicity"
+      ],
+      "census_participation": [
+        "age",
+        "sex",
+        "cars",
+        "education",
+        "health",
+        "household_size",
+        "ethnicity",
+        "econstatus",
+        "tenure"
+      ]
+    }
+  },
+  "phase2": {
+    "device": "gpu",
+    "outcomes": {
+      "all_cause_mortality": {
+        "label": "All-cause mortality",
+        "type": "all_cause"
+      },
+      "cancer_mortality": {
+        "label": "Cancer (all malignant neoplasms)",
+        "type": "cause_specific",
+        "match_scope": "underlying",
+        "icd10": [
+          "C00-C97"
+        ]
+      },
+      "cardiovascular_mortality": {
+        "label": "Cardiovascular diseases",
+        "type": "cause_specific",
+        "match_scope": "underlying",
+        "icd10": [
+          "I00-I99"
+        ]
+      },
+      "respiratory_mortality": {
+        "label": "Respiratory diseases",
+        "type": "cause_specific",
+        "match_scope": "underlying",
+        "icd10": [
+          "J00-J99"
+        ]
+      },
+      "digestive_mortality": {
+        "label": "Digestive diseases",
+        "type": "cause_specific",
+        "match_scope": "underlying",
+        "icd10": [
+          "K20-K93"
+        ]
+      },
+      "other_mortality": {
+        "label": "All other causes",
+        "type": "residual",
+        "match_scope": "underlying",
+        "excludes_icd10": [
+          [
+            "C00-C97"
+          ],
+          [
+            "I00-I99"
+          ],
+          [
+            "J00-J99"
+          ],
+          [
+            "K20-K93"
+          ]
+        ]
+      }
+    },
+    "weight_sources": {
+      "hse_superlearner": {
+        "label": "HSE Super Learner",
+        "column": "w"
+      },
+      "hse_lassologit": {
+        "label": "HSE lasso-penalised logistic",
+        "column": "w"
+      },
+      "hse_raking": {
+        "label": "HSE raking",
+        "column": "w"
+      },
+      "hse_entropy_balancing": {
+        "label": "HSE entropy balancing",
+        "column": "w"
+      },
+      "census_superlearner": {
+        "label": "Census Super Learner",
+        "column": "w"
+      }
+    },
+    "deep_surv": {
+      "hidden_dims": [
+        256,
+        128,
+        64
+      ],
+      "activation": "relu",
+      "dropout": 0.5,
+      "optimizer": "adamw",
+      "weight_decay": 1e-05,
+      "base_learning_rate": 0.01,
+      "lr_decay_factor": 10.0,
+      "lr_floor": 0.0001,
+      "epochs_per_stage": 300,
+      "early_stop_patience": 8,
+      "grad_clip_max_norm": 5.0,
+      "ties": "efron",
+      "baseline_estimator": "weighted_breslow"
+    },
+    "splits": {
+      "folds": 5,
+      "validation_fraction": 0.1,
+      "test_fraction_single_split": 0.1,
+      "seed": 11
+    }
+  },
+  "phase3": {
+    "weight_method": "hse_superlearner",
+    "weight_method_options": [
+      "hse_superlearner",
+      "hse_lassologit",
+      "hse_raking",
+      "hse_entropy_balancing",
+      "census_superlearner"
+    ],
+    "crossfit_folds": 5,
+    "crossfit_seed": 1234,
+    "learner_seed": 8791,
+    "census_design_weight": 20,
+    "winsorise_percentiles": [
+      0.01,
+      0.99
+    ],
+    "meta_learner": "method.NNloglik",
+    "meta_learner_retry_trim": 0.01,
+    "hse_lassologit": {
+      "design": "second_order_interactions",
+      "family": "binomial",
+      "alpha": 1,
+      "nfolds": 5,
+      "nlambda": 100,
+      "type_measure": "class",
+      "lambda_rule": "lambda.min"
+    },
+    "learners": {
+      "SL.xgboost_participation": {
+        "objective": "binary:logistic",
+        "eval_metric": "logloss",
+        "max_depth": 4,
+        "eta": 0.003,
+        "nrounds": 2000,
+        "min_child_weight": 1,
+        "subsample": 1,
+        "colsample_bytree": 1,
+        "gamma": 0,
+        "lambda": 1
+      },
+      "SL.ranger_participation": {
+        "num_trees": 1000,
+        "mtry_rule": "2*sqrt(p)",
+        "min_node_size": 100,
+        "sample_fraction": 0.632,
+        "replace": true,
+        "splitrule": "gini"
+      },
+      "SL.glmnet_participation": {
+        "alpha": 0.25,
+        "lambda_rule": "lambda.min",
+        "nfolds": 5,
+        "nlambda": 100
+      },
+      "SL.bart_participation": {
+        "n_trees": 200,
+        "k": 2,
+        "power": 1,
+        "base": 0.95,
+        "keep_training_fits": false
+      },
+      "SL.nnet_participation": {
+        "size": 16,
+        "decay": 0.01,
+        "entropy": true,
+        "maxit": 200,
+        "max_nwts": 100000
+      }
+    },
+    "moment_matching": {
+      "raking_continuous_bins": 5,
+      "raking_tolerance": 1e-09,
+      "entropy_tolerance": 1e-08,
+      "entropy_interaction": "sex",
+      "max_iterations": 5000
+    }
+  },
+  "phase5": {
+    "replicates": 200,
+    "interval_level": 0.95,
+    "seed": 91000000
+  }
+}

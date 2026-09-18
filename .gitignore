@@ -1,0 +1,17 @@
+# Data inputs. Only the generators are tracked.
+data/**
+!data/**/
+!data/**/make_synthetic_*.R
+!data/regenerate_synthetic_inputs.sh
+
+# Generated outputs.
+temp/**
+results/**
+!temp/.gitkeep
+!results/.gitkeep
+
+# Misc
+__pycache__/
+*.pyc
+.Rhistory
+.DS_Store

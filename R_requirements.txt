@@ -1,0 +1,23 @@
+# R dependencies
+SuperLearner   2.0.40
+glmnet         4.1.10
+ranger         0.18.0
+xgboost        3.2.0.1
+dbarts         0.9.34
+nnet           7.3.20
+fastDummies    1.7.5
+Matrix         1.7.4
+survival       3.8.3
+#
+# Data handling / I-O
+dplyr          1.2.0
+stringr        1.6.0
+lubridate      1.9.4
+tibble         3.3.0
+forcats        1.0.1
+plyr           1.8.9
+data.table     1.18.4
+haven          2.5.5
+readxl         1.4.5
+writexl        1.5.4
+jsonlite       2.0.0
