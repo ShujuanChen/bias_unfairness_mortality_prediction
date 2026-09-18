@@ -15,7 +15,8 @@ import matplotlib.pyplot as plt
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "common"))
 import consequences as cq
 import reporting as rp
-from helpers import ALL_CAUSE, CAUSES, CAUSE_LABELS, compute_rates, load_cause
+from helpers import (ALL_CAUSE, CAUSES, CAUSE_LABELS, compute_rates,
+                     load_cause, performance_rows)
 from paths import path_results
 from survival import HORIZONS_YEARS, risk_column
 
@@ -200,6 +201,25 @@ def parity(df):
         {"Parity ratios": table})
 
 
+# ── 6. The performance workbook ──────────────────────────────────────────────
+
+MODELS = [("PMR-trained", "pmr"), ("UKB-trained", "ukb")]
+
+
+def performance():
+    rows = []
+    for cause in CAUSES:
+        df = load_cause(cause)
+        if df is None:
+            print(f"[SKIP] {cause}")
+            continue
+        rows.extend(performance_rows(df, cause, MODELS))
+        del df
+        gc.collect()
+    rp.write_workbook(path_results(PHASE, "model_performance.xlsx"),
+                      {"Model performance": pd.DataFrame(rows)})
+
+
 def main():
     bias_by_cause()
 
@@ -209,6 +229,9 @@ def main():
     bias_by_stratum(df)
     consequences(df)
     parity(df)
+    del df
+    gc.collect()
+    performance()
     print("phase 2 results written")
 
 

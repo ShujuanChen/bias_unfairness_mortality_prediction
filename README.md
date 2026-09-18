@@ -88,6 +88,7 @@ The row counts below are expected for the synthetic inputs. Most are set by the 
 | `additional_unflagged_death_unweighted_{5,10}y.png`        | Additional observed deaths left unflagged by the UKB-trained model relative to PMR, across risk thresholds |
 | `difference_in_false_negative_rate_unweighted_{5,10}y.png` | Difference in false-negative rate between models across risk thresholds                                      |
 | `calibration_predictive_parity.xlsx`                       | Comparison of between-subgroup variation in relative bias and positive predictive value                      |
+| `model_performance.xlsx`                                   | Weighted AUC at both horizons, concordance index and Brier score for the UKB- and PMR-trained models         |
 
 ### `results/phase3_weighting/`
 
@@ -105,6 +106,7 @@ The row counts below are expected for the synthetic inputs. Most are set by the 
 | `bias_correction_by_cause_{5,10}y.png`   | Bias before and after weighting by cause                                      |
 | `bias_correction_by_strata_{5,10}y.png`  | All-cause bias correction by subgroup                                         |
 | `additional_unflagged_death_{5,10}y.png` | Additional unflagged deaths across risk thresholds before and after weighting |
+| `model_performance.xlsx`                 | Weighted AUC at both horizons, concordance index and Brier score before and after weighting |
 
 ### `results/phase5_uncertainty/`
 

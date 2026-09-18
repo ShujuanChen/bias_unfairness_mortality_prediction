@@ -17,8 +17,9 @@ from matplotlib.gridspec import GridSpec
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "common"))
 import consequences as cq
 import reporting as rp
-from helpers import (ALL_CAUSE, CAUSES, CAUSE_LABELS, WUKB_SOURCE,
-                     compute_rates, load_cause, require_weighted_column)
+from helpers import (ALL_CAUSE, CAUSES, CAUSE_LABELS, WEIGHT_METHOD_LABEL,
+                     WUKB_SOURCE, compute_rates, load_cause,
+                     performance_rows, require_weighted_column)
 from paths import path_results, path_temp
 from survival import HORIZONS_YEARS, risk_column
 from tabular import read_table, write_table
@@ -296,6 +297,27 @@ def consequences(df):
                    "additional_unflagged_death")
 
 
+# ── 4. The performance workbook ──────────────────────────────────────────────
+
+MODELS = [("UKB-trained, unweighted", "ukb"),
+          (f"UKB-trained, reweighted to {WEIGHT_METHOD_LABEL}", WUKB_SOURCE)]
+
+
+def performance():
+    rows = []
+    for cause in CAUSES:
+        df = load_cause(cause)
+        if df is None:
+            print(f"[SKIP] {cause}")
+            continue
+        require_weighted_column(df, cause,
+                                risk_column(cause, WUKB_SOURCE, HORIZONS_YEARS[0]))
+        rows.extend(performance_rows(df, cause, MODELS))
+        del df
+    rp.write_workbook(path_results(PHASE, "model_performance.xlsx"),
+                      {"Model performance": pd.DataFrame(rows)})
+
+
 def main():
     correction_by_cause()
     df = load_cause(ALL_CAUSE)
@@ -303,6 +325,8 @@ def main():
         raise SystemExit("No assembled all-cause predictions. Run phase 2 first.")
     correction_by_stratum(df)
     consequences(df)
+    del df
+    performance()
     print("phase 4 results written")
 
 
